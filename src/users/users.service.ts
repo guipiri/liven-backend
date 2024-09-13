@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { hashSync as bcryptHashSync } from 'bcrypt';
 import { Repository } from 'typeorm';
@@ -20,11 +20,22 @@ export class UsersService {
   }
 
   async findAll() {
-    return await this.userRepository.find();
+    return await this.userRepository.find({ relations: { addresses: true } });
   }
 
   async findOne(id: string) {
-    return await this.userRepository.findOne({ where: { id } });
+    return await this.userRepository.findOne({
+      where: { id },
+      relations: { addresses: true },
+    });
+  }
+
+  async findByEmail(email: string) {
+    const user = await this.userRepository.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {

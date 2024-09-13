@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Address } from 'src/addresses/entities/address.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -20,6 +22,10 @@ export class User {
   @ApiProperty()
   @Column({ type: 'varchar', nullable: true })
   password: string;
+
+  @ApiProperty()
+  @OneToMany(() => Address, (address) => address.user)
+  addresses: Address[];
 
   @ApiProperty()
   @CreateDateColumn({ type: 'timestamp with time zone', name: 'created_at' })
