@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthDto, SignInWithCredentialsDto } from './auth.dto';
 import { AuthService } from './auth.service';
 
@@ -9,6 +9,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ description: 'User authenticated', type: AuthDto })
   @Post('credentials')
   async signInWithCredentials(
     @Body() signInWithCredentialsDto: SignInWithCredentialsDto,

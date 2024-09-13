@@ -1,8 +1,12 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Request } from 'express';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 export class AuthDto {
+  @ApiProperty()
   token: string;
+
+  @ApiProperty()
   expiresIn: number;
 }
 

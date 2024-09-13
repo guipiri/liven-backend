@@ -9,7 +9,7 @@ import { JwtAuthGuard } from './auth.guard';
 export function AuthDecorators() {
   return applyDecorators(
     ApiBearerAuth(),
-    ApiUnauthorizedResponse({ description: 'SWAGGER_DES_UNAUTHORIZED' }),
+    ApiUnauthorizedResponse({ description: 'User unauthorized ' }),
     UseGuards(JwtAuthGuard),
     ApiHeader({
       name: 'Authorization',

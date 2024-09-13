@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { hashSync as bcryptHashSync } from 'bcrypt';
 import { Repository } from 'typeorm';
@@ -13,14 +17,14 @@ export class UsersService {
   ) {}
 
   async create({ email, password }: CreateUserDto) {
+    const emailAlreadyExists = await this.userRepository.findOne({
+      where: { email },
+    });
+    if (emailAlreadyExists) throw new ConflictException('Este email já existe');
     return await this.userRepository.save({
       email,
       password: bcryptHashSync(password, 10),
     });
-  }
-
-  async findAll() {
-    return await this.userRepository.find({ relations: { addresses: true } });
   }
 
   async findOne(id: string) {
@@ -39,7 +43,15 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    return await this.userRepository.update({ id }, updateUserDto);
+    return await this.userRepository.update(
+      { id },
+      {
+        ...updateUserDto,
+        password: updateUserDto.password
+          ? bcryptHashSync(updateUserDto.password, 10)
+          : undefined,
+      },
+    );
   }
 
   async remove(id: string) {

@@ -3,19 +3,39 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
   Patch,
   Post,
+  Req,
 } from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Request } from 'express';
 import { AuthDecorators } from 'src/auth/auth.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 
+@ApiBadRequestResponse({
+  description: 'Malformed request',
+})
+@ApiTags('User')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiConflictResponse({
+    description: 'Email already exist',
+  })
+  @ApiCreatedResponse({
+    description: 'User created',
+    type: User,
+  })
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
@@ -23,25 +43,25 @@ export class UsersController {
 
   @Get()
   @AuthDecorators()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  @AuthDecorators()
-  findOne(@Param('id') id: string) {
+  @ApiOkResponse({ type: User })
+  findOne(@Req() { user: { sub: id } }: Request) {
     return this.usersService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch()
   @AuthDecorators()
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @ApiOkResponse({ description: 'User updated' })
+  update(
+    @Req() { user: { sub: id } }: Request,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Delete(':id')
+  @Delete()
   @AuthDecorators()
-  remove(@Param('id') id: string) {
+  @ApiOkResponse({ description: 'User deleted' })
+  remove(@Req() { user: { sub: id } }: Request) {
     return this.usersService.remove(id);
   }
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsUUID } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class CreateAddressDto {
   @ApiProperty()
@@ -25,8 +25,4 @@ export class CreateAddressDto {
   @ApiProperty()
   @IsString()
   country: string;
-
-  @ApiProperty()
-  @IsUUID()
-  userId: string;
 }
