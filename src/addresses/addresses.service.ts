@@ -33,6 +33,6 @@ export class AddressesService {
   }
 
   async remove(id: string, userId: string) {
-    return await this.addressRepository.delete({ id, userId });
+    await this.addressRepository.delete({ id, userId });
   }
 }

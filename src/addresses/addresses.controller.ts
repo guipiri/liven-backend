@@ -16,7 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
-import { AuthDecorators } from 'src/auth/auth.decorator';
+import { AuthDecorators } from '../auth/auth.decorator';
 import { AddressesService } from './addresses.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { GetAddressQueryDto } from './dto/get-address-query.dto';

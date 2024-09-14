@@ -36,20 +36,17 @@ export class UsersService {
 
   async findByEmail(email: string) {
     const user = await this.userRepository.findOneBy({ email });
-    if (!user) {
-      throw new NotFoundException();
-    }
+    if (!user) throw new NotFoundException();
+
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, { email, password }: UpdateUserDto) {
     return await this.userRepository.update(
       { id },
       {
-        ...updateUserDto,
-        password: updateUserDto.password
-          ? bcryptHashSync(updateUserDto.password, 10)
-          : undefined,
+        email,
+        password: password ? bcryptHashSync(password, 10) : undefined,
       },
     );
   }
