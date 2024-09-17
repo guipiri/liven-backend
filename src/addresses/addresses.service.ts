@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateAddressDto } from './dto/create-address.dto';
@@ -26,6 +30,15 @@ export class AddressesService {
   }
 
   async update(id: string, userId: string, updateAddressDto: UpdateAddressDto) {
+    const address = await this.addressRepository.findOne({
+      where: { id },
+    });
+
+    if (!address) throw new NotFoundException(`Endereço não encontrado: ${id}`);
+
+    if (address.userId !== userId)
+      throw new UnauthorizedException('Este endereço não pertence a você');
+
     return await this.addressRepository.update(
       { id, userId },
       updateAddressDto,
@@ -33,6 +46,12 @@ export class AddressesService {
   }
 
   async remove(id: string, userId: string) {
-    await this.addressRepository.delete({ id, userId });
+    const address = await this.addressRepository.findOne({
+      where: { id },
+    });
+    if (!address) throw new NotFoundException(`Endereço não encontrado: ${id}`);
+    if (address.userId !== userId)
+      throw new UnauthorizedException('Este endereço não pertence a você');
+    return await this.addressRepository.delete({ id, userId });
   }
 }

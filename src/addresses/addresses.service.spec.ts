@@ -1,3 +1,4 @@
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
@@ -63,6 +64,7 @@ describe('AddressesService', () => {
           useValue: {
             save: jest.fn().mockResolvedValue(newAddress),
             find: jest.fn().mockResolvedValue([newAddress]),
+            findOne: jest.fn().mockResolvedValue(newAddress),
             update: jest.fn().mockResolvedValue(updateResut),
             delete: jest.fn().mockResolvedValue(deleteResult),
           },
@@ -140,6 +142,41 @@ describe('AddressesService', () => {
         updateAddressDto,
       );
     });
+
+    it('should throw not found exception if address id doesn`t exist', async () => {
+      //Arrange
+      const id = 'id';
+      const userId = 'userId';
+      jest.spyOn(addressRepository, 'findOne').mockResolvedValue(null);
+
+      //Assert
+      expect(
+        addressService.update(id, userId, updateAddressDto),
+      ).rejects.toThrow(
+        new NotFoundException(`Endereço não encontrado: ${id}`),
+      );
+      expect(addressRepository.update).not.toHaveBeenCalled();
+      expect(addressRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(addressRepository.findOne).toHaveBeenCalledWith({ where: { id } });
+    });
+    it('should throw unauthorized exception if address doesn`t belongs to requesting user', async () => {
+      //Arrange
+      const id = 'id';
+      const userId = 'userId';
+      jest
+        .spyOn(addressRepository, 'findOne')
+        .mockResolvedValue({ ...newAddress, userId: 'different-userId' });
+
+      //Assert
+      expect(
+        addressService.update(id, userId, updateAddressDto),
+      ).rejects.toThrow(
+        new UnauthorizedException('Este endereço não pertence a você'),
+      );
+      expect(addressRepository.update).not.toHaveBeenCalled();
+      expect(addressRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(addressRepository.findOne).toHaveBeenCalledWith({ where: { id } });
+    });
   });
 
   describe('remove', () => {
@@ -150,9 +187,41 @@ describe('AddressesService', () => {
       //Act
       const res = await addressService.remove(id, userId);
       //Assert
-      expect(res).toEqual(undefined);
+      expect(res).toEqual(deleteResult);
       expect(addressRepository.delete).toHaveBeenCalledTimes(1);
       expect(addressRepository.delete).toHaveBeenCalledWith({ id, userId });
+    });
+
+    it('should throw not found exception if address id doesn`t exist', async () => {
+      //Arrange
+      const id = 'id';
+      const userId = 'userId';
+      jest.spyOn(addressRepository, 'findOne').mockResolvedValue(null);
+
+      //Assert
+      expect(addressService.remove(id, userId)).rejects.toThrow(
+        new NotFoundException(`Endereço não encontrado: ${id}`),
+      );
+      expect(addressRepository.delete).not.toHaveBeenCalled();
+      expect(addressRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(addressRepository.findOne).toHaveBeenCalledWith({ where: { id } });
+    });
+
+    it('should throw unauthorized exception if address doesn`t belongs to requesting user', async () => {
+      //Arrange
+      const id = 'id';
+      const userId = 'userId';
+      jest
+        .spyOn(addressRepository, 'findOne')
+        .mockResolvedValue({ ...newAddress, userId: 'different-userId' });
+
+      //Assert
+      expect(addressService.remove(id, userId)).rejects.toThrow(
+        new UnauthorizedException('Este endereço não pertence a você'),
+      );
+      expect(addressRepository.delete).not.toHaveBeenCalled();
+      expect(addressRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(addressRepository.findOne).toHaveBeenCalledWith({ where: { id } });
     });
   });
 });
